@@ -1415,7 +1415,7 @@ func (o *OCMProvider) GetNetworkConfig(networkProvider string) string {
 	if networkProvider == config.DefaultNetworkProvider {
 		return ""
 	}
-	if networkProvider != "OVNKubernetes" {
+	if networkProvider != "OpenShiftSDN" {
 		return ""
 	}
 	return `
@@ -1426,7 +1426,7 @@ networking:
   machineCIDR: 10.0.0.0/16
   machineNetwork:
   - cidr: 10.0.0.0/16
-  networkType: OVNKubernetes
+  networkType: OpenShiftSDN
   serviceNetwork:
   - 172.30.0.0/16
 `
