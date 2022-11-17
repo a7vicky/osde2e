@@ -17,6 +17,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/util/retry"
 )
@@ -289,6 +291,33 @@ var _ = ginkgo.Describe(dedicatedAdminTestName, func() {
 			err := manageSubscriptions(namespaceList, h)
 			Expect(err).NotTo(HaveOccurred())
 
+		}, float64(viper.GetFloat64(config.Tests.PollingTimeout)))
+
+		// dedicated-admin user can patch consoles.operator.openshift.io CR
+		util.GinkgoIt("ded-admin user can patch consoles.operator.openshift.io CR", func() {
+
+			// Impersonate ded-admin
+			h.Impersonate(rest.ImpersonationConfig{
+				UserName: "dummy-admin@redhat.com",
+				Groups: []string{
+					"dedicated-admin",
+				},
+			})
+			defer func() {
+				h.Impersonate(rest.ImpersonationConfig{})
+			}()
+
+			patchData := []byte(fmt.Sprintf(`{"spec":{"plugins":["test"]}}`))
+
+			_, err := h.Dynamic().Resource(schema.GroupVersionResource{Group: "operator.openshift.io", Version: "v1",
+				Resource: "consoles"}).Patch(context.TODO(), "cluster", types.MergePatchType, patchData, metav1.PatchOptions{})
+			Expect(err).NotTo(HaveOccurred())
+
+			patchEmpty := []byte(fmt.Sprintf(`{"spec":{"plugins":[" "]}}`))
+
+			_, err1 := h.Dynamic().Resource(schema.GroupVersionResource{Group: "operator.openshift.io", Version: "v1",
+				Resource: "consoles"}).Patch(context.TODO(), "cluster", types.MergePatchType, patchEmpty, metav1.PatchOptions{})
+			Expect(err1).NotTo(HaveOccurred())
 		}, float64(viper.GetFloat64(config.Tests.PollingTimeout)))
 
 	})
