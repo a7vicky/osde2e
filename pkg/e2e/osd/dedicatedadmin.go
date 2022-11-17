@@ -313,7 +313,7 @@ var _ = ginkgo.Describe(dedicatedAdminTestName, func() {
 				Resource: "consoles"}).Patch(context.TODO(), "cluster", types.MergePatchType, patchData, metav1.PatchOptions{})
 			Expect(err).NotTo(HaveOccurred())
 
-			patchEmpty := []byte(fmt.Sprintf(`{"spec":{"plugins":[" "]}}`))
+			patchEmpty := []byte(fmt.Sprintf(`{"spec":{"plugins":[""]}}`))
 
 			_, err1 := h.Dynamic().Resource(schema.GroupVersionResource{Group: "operator.openshift.io", Version: "v1",
 				Resource: "consoles"}).Patch(context.TODO(), "cluster", types.MergePatchType, patchEmpty, metav1.PatchOptions{})
